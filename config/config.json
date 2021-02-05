@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "self-profile-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/selfProfile/SelfProfileWebPart.js",
+          "manifest": "./src/webparts/selfProfile/SelfProfileWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "SelfProfileWebPartStrings": "lib/webparts/selfProfile/loc/{locale}.js"
+  }
+}
