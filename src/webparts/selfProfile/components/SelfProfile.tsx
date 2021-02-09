@@ -31,7 +31,13 @@ export default class SelfProfile extends React.Component<ISelfProfileProps, ISel
       jobTitle: '',
       mobilePhone: '', 
       officeLocation: '',
+      streetAddress: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: '',
       photo: '',
+      department: '',
       managerDisplayName: '',
       modalToggle: false
     };  
@@ -43,10 +49,12 @@ private getUserDetails(): void {
     .getClient()  
     .then((client: MSGraphClient): void => {  
       // Get user information from the Microsoft Graph  
+      // https://graph.microsoft.com/v1.0/me/?$select=displayName,country,streetAddress,postalCode,state,city,photo,mail,userPrincipalName,givenName,surname,jobTitle,mobilePhone,businessPhones,department,officeLocation&$expand=manager
+
       client  
         .api('/me')
         .version("v1.0")
-        .select(["displayName","mail","userPrincipalName","givenName","surname","jobTitle","mobilePhone","officeLocation","photo","department","manager"]) 
+        .select(["displayName","mail","userPrincipalName","givenName","surname","jobTitle","mobilePhone","officeLocation","department","streetAddress","city","state","postalCode","country","businessPhones"]) 
         .get((error, result: MicrosoftGraph.User, rawResponse?: any) => {  
           // handle the response  
           if (error) {  
@@ -78,7 +86,13 @@ private getUserDetails(): void {
               surname: result.surname,
               jobTitle: result.jobTitle,
               mobilePhone: result.mobilePhone,
-              officeLocation: result.officeLocation
+              officeLocation: result.officeLocation,
+              streetAddress: result.streetAddress,
+              city: result.city,
+              state: result.state,
+              postalCode: result.postalCode,
+              country: result.country,
+              department: result.department,
             }  
           );  
         });  
@@ -113,6 +127,7 @@ private getUserManager(): void {
     .getClient()  
     .then((client: MSGraphClient): void => {  
       // Get user information from the Microsoft Graph  
+      // https://graph.microsoft.com/v1.0/me/manager?$select=displayName
       client  
         .api('/me/manager')
         .version("v1.0")
@@ -135,6 +150,13 @@ private toggle(): void {
   this.setState({
     modalToggle: !this.state.modalToggle,
   });
+}
+
+@autobind
+private sendUserData(): void {
+  // TODO add the call the function all here
+  console.log("You clicked the save button!");
+  console.log(this.state);
 }
 
 componentDidMount() {
@@ -193,20 +215,24 @@ componentDidMount() {
                     <TextField
                       label="Street Address"
                       className={ styles.formMr }
+                      value={this.state.streetAddress}
                     />
                     <TextField
                       label="City"
                       className={ styles.formMr }
+                      value={this.state.city}
                     />
                   </Stack>
                   <Stack horizontal>
                     <TextField
                       label="Province"
                       className={ styles.formMr }
+                      value={this.state.state}
                     />
                     <TextField
                       label="Postal Code"
                       className={ styles.formMr }
+                      value={this.state.postalCode}
                     />
                     <TextField
                       label="Country"
@@ -225,6 +251,12 @@ componentDidMount() {
                   <TextField
                     label="Manager (PH)"
                   />
+                  <div>
+                    <PrimaryButton
+                      text="SAVE PH"
+                      onClick={this.sendUserData}
+                    />
+                  </div>
                 </div>
               </Modal>
             </div>
@@ -235,7 +267,7 @@ componentDidMount() {
               <Persona 
                 text= {(this.state.displayName) && this.state.displayName}
                 secondaryText= {(this.state.jobTitle) ? this.state.jobTitle : 'Job Title PH'}
-                tertiaryText= "Department Here"
+                tertiaryText= {(this.state.department) ? this.state.department : 'Department PH'}
                 size={PersonaSize.size72}
               />
               <div>
@@ -265,10 +297,29 @@ componentDidMount() {
                   <div className={ styles.dataContainer }>
                     <div className={ styles.dataLabel }>Office Location</div>
                     {
-                      // TODO Change this to address
                       (this.state.officeLocation) ?
                       <div>{this.state.officeLocation}</div> :
                       <div>N/A</div>
+                    }
+                    {
+                      (this.state.streetAddress) &&
+                      <div>{this.state.streetAddress} </div>
+                    }
+                    {
+                      (this.state.city) &&
+                      <div>{this.state.city} </div>
+                    }
+                    {
+                      (this.state.state) &&
+                      <div>{this.state.state} </div>
+                    }
+                    {
+                      (this.state.postalCode) &&
+                      <div>{this.state.postalCode} </div>
+                    }
+                    {
+                      (this.state.country) &&
+                      <div>{this.state.country} </div>
                     }
                   </div>
                 </Stack>
