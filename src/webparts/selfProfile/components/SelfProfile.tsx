@@ -1,19 +1,22 @@
 import * as React from 'react';
-import { MSGraphClient } from '@microsoft/sp-http';  
+import { MSGraphClient, IHttpClientOptions, AadHttpClient, HttpClientResponse } from '@microsoft/sp-http';  
 import * as MicrosoftGraph from '@microsoft/microsoft-graph-types'; 
 import {
   autobind,
   PrimaryButton,
+  Button,
   Persona,
   PersonaSize,
   Stack,
   Modal,
-  TextField
+  TextField,
+  MaskedTextField
 } from 'office-ui-fabric-react'; 
 import styles from './SelfProfile.module.scss';
 import { ISelfProfileProps } from './ISelfProfileProps';
 import { ISelfProfileState } from './ISelfProfileState';
 import { IUserInfo } from './IUserInfo';
+import EditModal from './EditModal';
 import { escape } from '@microsoft/sp-lodash-subset';
 
 export default class SelfProfile extends React.Component<ISelfProfileProps, ISelfProfileState> {
@@ -23,13 +26,15 @@ export default class SelfProfile extends React.Component<ISelfProfileProps, ISel
     // Initialize the state of the component  
     this.state = {  
       users: [], 
+      userID: '',
       displayName: '',
       mail: '',
       userPrincipalName: '',
       givenName: '',
       surname: '',
       jobTitle: '',
-      mobilePhone: '', 
+      mobilePhone: '',
+      businessPhone: '',
       officeLocation: '',
       streetAddress: '',
       city: '',
@@ -54,7 +59,7 @@ private getUserDetails(): void {
       client  
         .api('/me')
         .version("v1.0")
-        .select(["displayName","mail","userPrincipalName","givenName","surname","jobTitle","mobilePhone","officeLocation","department","streetAddress","city","state","postalCode","country","businessPhones"]) 
+        .select(["id,displayName","mail","userPrincipalName","givenName","surname","jobTitle","mobilePhone","officeLocation","department","streetAddress","city","state","postalCode","country","businessPhones"]) 
         .get((error, result: MicrosoftGraph.User, rawResponse?: any) => {  
           // handle the response  
           if (error) {  
@@ -80,12 +85,14 @@ private getUserDetails(): void {
           this.setState(  
             {  
               users: users,  
+              userID: result.id,
               displayName: result.displayName,
               mail: result.mail,
               givenName: result.givenName,
               surname: result.surname,
               jobTitle: result.jobTitle,
               mobilePhone: result.mobilePhone,
+              businessPhone: result.businessPhones[0],
               officeLocation: result.officeLocation,
               streetAddress: result.streetAddress,
               city: result.city,
@@ -153,10 +160,54 @@ private toggle(): void {
 }
 
 @autobind
+private closeModal(): void {
+  this.getUserDetails();
+  this.setState({
+    modalToggle: false
+  });
+}
+
+@autobind
 private sendUserData(): void {
   // TODO add the call the function all here
   console.log("You clicked the save button!");
   console.log(this.state);
+  const reqHeaders: Headers = new Headers();
+  reqHeaders.append('Content-type', 'application/json');
+  const reqBody: string = JSON.stringify({
+    //TODO change userID Back to state
+    'user': {
+      'userID': this.state.userID,
+      'jobTitle': this.state.jobTitle,
+      'firstName': this.state.givenName,
+      'lastName': this.state.surname,
+      'mobilePhone': this.state.mobilePhone,
+      'streetAddress': this.state.streetAddress,
+      'city': this.state.city,
+      'province': this.state.state,
+      'postalcode': this.state.postalCode,
+      'country': this.state.country,
+      'department': this.state.department,
+      'businessPhones': this.state.businessPhone,
+    }
+  });
+  const options: IHttpClientOptions = {
+    headers: reqHeaders,
+    body: reqBody
+  }
+  console.log(options);
+  this.props.context.aadHttpClientFactory
+      // Add Client
+      .getClient('')
+      .then((client: AadHttpClient): void => {
+        client
+          // Add URL
+          .post('', AadHttpClient.configurations.v1, options)
+          .then((response: HttpClientResponse) => {
+            console.log(response);
+            return response.json();
+          })
+      });
 }
 
 componentDidMount() {
@@ -186,26 +237,45 @@ componentDidMount() {
                   // TODO make the form work
                   // TODO i18n
                 }
-                <div className={ styles.title }>Hello! A form will go here</div>
-                <PrimaryButton
-                  onClick={this.toggle}
-                >
-                  CLOSE PH
-                </PrimaryButton>
                 <div className={ styles.modalContainer }>
+                  <div className={ styles.title }>Edit</div>
                   <TextField
-                    label="Name"
-                    value={this.state.displayName}
+                    label="First Name"
+                    value={this.state.givenName}
+                    onChange={(e) => {
+                      this.setState({
+                        givenName: (e.target as HTMLInputElement).value
+                      });
+                    }}
+                  />
+                  <TextField
+                    label="Last Name"
+                    value={this.state.surname}
+                    onChange={(e) => {
+                      this.setState({
+                        surname: (e.target as HTMLInputElement).value
+                      });
+                    }}
                   />
                   <TextField
                     label="Email"
                     value={this.state.mail}
+                    onChange={(e) => {
+                      this.setState({
+                        mail: (e.target as HTMLInputElement).value
+                      });
+                    }}
                   />
                   <Stack horizontal>
                     <TextField
                       label="Job Title EN"
                       className={ styles.formMr }
                       value={this.state.jobTitle}
+                      onChange={(e) => {
+                        this.setState({
+                          jobTitle: (e.target as HTMLInputElement).value
+                        });
+                      }}
                     />
                     <TextField
                       label="Job Title FR"
@@ -216,11 +286,21 @@ componentDidMount() {
                       label="Street Address"
                       className={ styles.formMr }
                       value={this.state.streetAddress}
+                      onChange={(e) => {
+                        this.setState({
+                          streetAddress: (e.target as HTMLInputElement).value
+                        });
+                      }}
                     />
                     <TextField
                       label="City"
                       className={ styles.formMr }
                       value={this.state.city}
+                      onChange={(e) => {
+                        this.setState({
+                          city: (e.target as HTMLInputElement).value
+                        });
+                      }}
                     />
                   </Stack>
                   <Stack horizontal>
@@ -228,34 +308,75 @@ componentDidMount() {
                       label="Province"
                       className={ styles.formMr }
                       value={this.state.state}
+                      onChange={(e) => {
+                        this.setState({
+                          state: (e.target as HTMLInputElement).value
+                        });
+                      }}
                     />
                     <TextField
                       label="Postal Code"
                       className={ styles.formMr }
                       value={this.state.postalCode}
+                      onChange={(e) => {
+                        this.setState({
+                          postalCode: (e.target as HTMLInputElement).value
+                        });
+                      }}
                     />
                     <TextField
                       label="Country"
+                      value={this.state.country}
+                      onChange={(e) => {
+                        this.setState({
+                          country: (e.target as HTMLInputElement).value
+                        });
+                      }}
                     />
                   </Stack>
                   <Stack horizontal>
-                    <TextField
+                    <MaskedTextField
                       label="Mobile Phone"
+                      mask="(999) 999 - 9999"
                       className={ styles.formMr }
-                      value={this.state.mobilePhone}
+                      value={(this.state.mobilePhone) ? this.state.mobilePhone : ''}
+                      onChange={(e) => {
+                        this.setState({
+                          mobilePhone: (e.target as HTMLInputElement).value
+                        });
+                      }}
                     />
-                    <TextField
+                    <MaskedTextField
                       label="Office Phone"
+                      mask="(999) 999 - 9999"
+                      value={this.state.businessPhone}
+                      onChange={(e) => {
+                        this.setState({
+                          businessPhone: (e.target as HTMLInputElement).value
+                        });
+                      }}
                     />
                   </Stack>
                   <TextField
                     label="Manager (PH)"
+                    disabled
                   />
-                  <div>
-                    <PrimaryButton
-                      text="SAVE PH"
-                      onClick={this.sendUserData}
-                    />
+                  <TextField
+                    label="Department"
+                    disabled
+                  />
+                  <div className={ styles.actionBtnContainer }>
+                    <Stack horizontal horizontalAlign="end">
+                      <Button
+                        onClick={this.closeModal}
+                      >
+                        CLOSE PH
+                      </Button>
+                      <PrimaryButton
+                        text="SAVE PH"
+                        onClick={this.sendUserData}
+                      />  
+                    </Stack>
                   </div>
                 </div>
               </Modal>
@@ -292,34 +413,37 @@ componentDidMount() {
                   </div>
                   <div className={ styles.dataContainer }>
                     <div className={ styles.dataLabel }>Office Phone</div>
-                    <div>TEST 2</div>
+                    {
+                      (this.state.businessPhone) ?
+                      <div>{this.state.businessPhone}</div> :
+                      <div>N/A</div>
+                    }
                   </div>
                   <div className={ styles.dataContainer }>
                     <div className={ styles.dataLabel }>Office Location</div>
                     {
-                      (this.state.officeLocation) ?
-                      <div>{this.state.officeLocation}</div> :
-                      <div>N/A</div>
+                      (this.state.officeLocation) &&
+                      <div>{this.state.officeLocation}</div>
                     }
                     {
                       (this.state.streetAddress) &&
-                      <div>{this.state.streetAddress} </div>
+                      <span>{this.state.streetAddress} </span>
                     }
                     {
                       (this.state.city) &&
-                      <div>{this.state.city} </div>
+                      <span>{this.state.city} </span>
                     }
                     {
                       (this.state.state) &&
-                      <div>{this.state.state} </div>
+                      <span>{this.state.state} </span>
                     }
                     {
                       (this.state.postalCode) &&
-                      <div>{this.state.postalCode} </div>
+                      <span>{this.state.postalCode} </span>
                     }
                     {
                       (this.state.country) &&
-                      <div>{this.state.country} </div>
+                      <span>{this.state.country} </span>
                     }
                   </div>
                 </Stack>
@@ -334,14 +458,6 @@ componentDidMount() {
               </div>
             </div>
           </div>
-          {
-            // this is a button for testing API call
-          }
-            <PrimaryButton
-              text='TEST BTN'
-              title='TEST'
-              onClick={this.getUserDetails}
-            />
         </div>
       </div>
     );

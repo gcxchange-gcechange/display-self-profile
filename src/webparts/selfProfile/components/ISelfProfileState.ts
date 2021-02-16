@@ -2,6 +2,7 @@ import { IUserInfo } from './IUserInfo';
   
 export interface ISelfProfileState {  
     users: Array<IUserInfo>;  
+    userID: string;
     displayName: string;
     mail: string;
     userPrincipalName: string;
@@ -9,6 +10,7 @@ export interface ISelfProfileState {
     surname: string;
     jobTitle: string;
     mobilePhone: string;
+    businessPhone: string;
     officeLocation: string;
     streetAddress: string;
     city: string;
