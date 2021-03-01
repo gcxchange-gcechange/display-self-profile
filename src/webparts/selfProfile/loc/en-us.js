@@ -22,6 +22,7 @@ define([], function() {
     "SaveButton": "Save",
     "OfficeLocationLabel": "Office Location",
     "JobTitleNA": "Job Title N/A",
-    "DepartmentNA": "Department N/A"
+    "DepartmentNA": "Department N/A",
+    "UploadAvatarLabel": "Upload Avatar"
   }
 });

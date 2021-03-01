@@ -15,13 +15,14 @@ define([], function() {
     "PostalCodeLabel": "Code postal",
     "CountryLabel": "Pays",
     "MobilePhoneLabel": "Cellulaire",
-    "OfficePhoneLabel": "Téléphone",
+    "OfficePhoneLabel": "Téléphone de bureau",
     "MangerLabel": "Superviseur (PH)",
     "DepartmentLabel": "Ministère (PH)",
     "CancelButton": "Annuler",
     "SaveButton": "Sauvegarder les changements",
     "OfficeLocationLabel": "Adresse au travail",
     "JobTitleNA": "Titre du poste N/A",
-    "DepartmentNA": "Ministère N/A"
+    "DepartmentNA": "Ministère N/A",
+    "UploadAvatarLabel": "Modifier l’image"
   }
 });

@@ -22,6 +22,7 @@ declare interface ISelfProfileWebPartStrings {
   OfficeLocationLabel: string;
   JobTitleNA: string;
   DepartmentNA: string;
+  UploadAvatarLabel: string;
 }
 
 declare module 'SelfProfileWebPartStrings' {

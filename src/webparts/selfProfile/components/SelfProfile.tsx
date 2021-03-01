@@ -20,6 +20,7 @@ import { IUserInfo } from './IUserInfo';
 import EditModal from './EditModal';
 import { escape } from '@microsoft/sp-lodash-subset';
 import { string } from 'prop-types';
+import { oDataQueryNames } from '@microsoft/microsoft-graph-client';
 
 export default class SelfProfile extends React.Component<ISelfProfileProps, ISelfProfileState> {
   constructor(props: ISelfProfileProps, state: ISelfProfileState) {  
@@ -115,17 +116,20 @@ private getUserPhoto(): void {
     .then((client: MSGraphClient): void => {  
       // Get user information from the Microsoft Graph  
       client  
-        .api('/me/photo')
+        .api('/me/photo/$value')
+        .responseType('blob')
         .version("v1.0")
-        .get((error, result: MicrosoftGraph.User, rawResponse?: any) => {  
+        .get(async (error, result, rawResponse) => {  
           // handle the response  
           if (error) {  
             console.log(error);
             return;  
           }  
           // Log the photo response for now
-          // TODO add photo / photo URL to component state
-          console.log(result);
+          const blobUrl = window.URL.createObjectURL(result);
+          this.setState({
+            photo: blobUrl
+          });
         });  
     });  
 }
@@ -152,6 +156,23 @@ private getUserManager(): void {
           });
         });  
     });  
+}
+
+@autobind
+private putUserAvatar(file): void {
+  this.props.context.msGraphClientFactory
+    .getClient()
+    .then((client: MSGraphClient): void => {
+      client
+        .api('/me/photo/$value')
+        .version("v1.0")
+        .header("Content-Type", 'image/jpeg')
+        .put(file)
+        .then((response: HttpClientResponse) => {
+          console.log(response);
+          this.getUserPhoto();
+        })
+    })
 }
 
 @autobind
@@ -207,6 +228,9 @@ private sendUserData(): void {
           .post('', AadHttpClient.configurations.v1, options)
           .then((response: HttpClientResponse) => {
             console.log(response);
+            this.setState({
+              modalToggle: false
+            });
             return response.json();
           })
       });
@@ -225,7 +249,22 @@ componentDidMount() {
         <div className={ styles.container }>
           <div className={ styles.row }>
             <div>
-              <Stack horizontalAlign="end">
+              <Stack horizontal horizontalAlign="end">
+                <Button
+                  onClick={e => e.stopPropagation()}
+                >
+                  <label htmlFor="avatarUpload">
+                    {strings.UploadAvatarLabel}
+                    <input
+                      type="file"
+                      id="avatarUpload"
+                      style={{display:"none"}}
+                      onChange={({ target }) => {
+                        this.putUserAvatar(target.files[0]);
+                      }}
+                    />  
+                  </label>
+                </Button>
                 <PrimaryButton
                   text={strings.EditLabel}
                   onClick={this.toggle}
@@ -388,6 +427,7 @@ componentDidMount() {
                 // TODO grab photo URL
               }
               <Persona 
+                imageUrl={this.state.photo && this.state.photo}
                 text= {(this.state.displayName) && this.state.displayName}
                 secondaryText= {(this.state.jobTitle) ? this.state.jobTitle : strings.JobTitleNA}
                 tertiaryText= {(this.state.department) ? this.state.department : strings.DepartmentNA}
@@ -454,8 +494,11 @@ componentDidMount() {
                   {
                     (this.state.managerDisplayName) ?
                     <div>{this.state.managerDisplayName}</div> :
-                    <div>Manager N/A</div>
+                    <div>N/A</div>
                   }
+                </div>
+                <div>
+                  
                 </div>
               </div>
             </div>
