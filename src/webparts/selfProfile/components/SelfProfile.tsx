@@ -11,13 +11,15 @@ import {
   Modal,
   TextField,
   MaskedTextField
-} from 'office-ui-fabric-react'; 
+} from 'office-ui-fabric-react';
+import * as strings from "SelfProfileWebPartStrings"; 
 import styles from './SelfProfile.module.scss';
 import { ISelfProfileProps } from './ISelfProfileProps';
 import { ISelfProfileState } from './ISelfProfileState';
 import { IUserInfo } from './IUserInfo';
 import EditModal from './EditModal';
 import { escape } from '@microsoft/sp-lodash-subset';
+import { string } from 'prop-types';
 import { oDataQueryNames } from '@microsoft/microsoft-graph-client';
 
 export default class SelfProfile extends React.Component<ISelfProfileProps, ISelfProfileState> {
@@ -252,7 +254,7 @@ componentDidMount() {
                   onClick={e => e.stopPropagation()}
                 >
                   <label htmlFor="avatarUpload">
-                    UPLOAD AVATAR
+                    {strings.UploadAvatarLabel}
                     <input
                       type="file"
                       id="avatarUpload"
@@ -264,7 +266,7 @@ componentDidMount() {
                   </label>
                 </Button>
                 <PrimaryButton
-                  text="EDIT PH"
+                  text={strings.EditLabel}
                   onClick={this.toggle}
                 />
               </Stack>
@@ -277,9 +279,9 @@ componentDidMount() {
                   // TODO i18n
                 }
                 <div className={ styles.modalContainer }>
-                  <div className={ styles.title }>Edit</div>
+                  <div className={ styles.title }>{strings.EditLabel}</div>
                   <TextField
-                    label="First Name"
+                    label={strings.FirstNameLabel}
                     value={this.state.givenName}
                     onChange={(e) => {
                       this.setState({
@@ -288,7 +290,7 @@ componentDidMount() {
                     }}
                   />
                   <TextField
-                    label="Last Name"
+                    label={strings.LastNameLabel}
                     value={this.state.surname}
                     onChange={(e) => {
                       this.setState({
@@ -297,7 +299,7 @@ componentDidMount() {
                     }}
                   />
                   <TextField
-                    label="Email"
+                    label={strings.EmailLabel}
                     value={this.state.mail}
                     onChange={(e) => {
                       this.setState({
@@ -307,7 +309,7 @@ componentDidMount() {
                   />
                   <Stack horizontal>
                     <TextField
-                      label="Job Title EN"
+                      label={strings.JobTitleEnLabel}
                       className={ styles.formMr }
                       value={this.state.jobTitle}
                       onChange={(e) => {
@@ -317,12 +319,12 @@ componentDidMount() {
                       }}
                     />
                     <TextField
-                      label="Job Title FR"
+                      label={strings.JobTitleFrLabel}
                     />
                   </Stack>
                   <Stack horizontal>
                     <TextField
-                      label="Street Address"
+                      label={strings.StreetAddressLabel}
                       className={ styles.formMr }
                       value={this.state.streetAddress}
                       onChange={(e) => {
@@ -332,7 +334,7 @@ componentDidMount() {
                       }}
                     />
                     <TextField
-                      label="City"
+                      label={strings.CityLabel}
                       className={ styles.formMr }
                       value={this.state.city}
                       onChange={(e) => {
@@ -344,7 +346,7 @@ componentDidMount() {
                   </Stack>
                   <Stack horizontal>
                     <TextField
-                      label="Province"
+                      label={strings.ProvinceLabel}
                       className={ styles.formMr }
                       value={this.state.state}
                       onChange={(e) => {
@@ -354,7 +356,7 @@ componentDidMount() {
                       }}
                     />
                     <TextField
-                      label="Postal Code"
+                      label={strings.PostalCodeLabel}
                       className={ styles.formMr }
                       value={this.state.postalCode}
                       onChange={(e) => {
@@ -364,7 +366,7 @@ componentDidMount() {
                       }}
                     />
                     <TextField
-                      label="Country"
+                      label={strings.CountryLabel}
                       value={this.state.country}
                       onChange={(e) => {
                         this.setState({
@@ -375,7 +377,7 @@ componentDidMount() {
                   </Stack>
                   <Stack horizontal>
                     <MaskedTextField
-                      label="Mobile Phone"
+                      label={strings.MobilePhoneLabel}
                       mask="(999) 999 - 9999"
                       className={ styles.formMr }
                       value={(this.state.mobilePhone) ? this.state.mobilePhone : ''}
@@ -386,7 +388,7 @@ componentDidMount() {
                       }}
                     />
                     <MaskedTextField
-                      label="Office Phone"
+                      label={strings.OfficePhoneLabel}
                       mask="(999) 999 - 9999"
                       value={this.state.businessPhone}
                       onChange={(e) => {
@@ -397,11 +399,11 @@ componentDidMount() {
                     />
                   </Stack>
                   <TextField
-                    label="Manager (PH)"
+                    label={strings.MangerLabel}
                     disabled
                   />
                   <TextField
-                    label="Department"
+                    label={strings.DepartmentLabel}
                     disabled
                   />
                   <div className={ styles.actionBtnContainer }>
@@ -409,10 +411,10 @@ componentDidMount() {
                       <Button
                         onClick={this.closeModal}
                       >
-                        CLOSE PH
+                        {strings.CancelButton}
                       </Button>
                       <PrimaryButton
-                        text="SAVE PH"
+                        text={strings.SaveButton}
                         onClick={this.sendUserData}
                       />  
                     </Stack>
@@ -427,32 +429,32 @@ componentDidMount() {
               <Persona 
                 imageUrl={this.state.photo && this.state.photo}
                 text= {(this.state.displayName) && this.state.displayName}
-                secondaryText= {(this.state.jobTitle) ? this.state.jobTitle : 'Job Title PH'}
-                tertiaryText= {(this.state.department) ? this.state.department : 'Department PH'}
+                secondaryText= {(this.state.jobTitle) ? this.state.jobTitle : strings.JobTitleNA}
+                tertiaryText= {(this.state.department) ? this.state.department : strings.DepartmentNA}
                 size={PersonaSize.size72}
               />
               <div>
                 <div>
                   <div className={ styles.dataContainer }>
-                    <div className={ styles.dataLabel }>Email</div>
+                    <div className={ styles.dataLabel }>{strings.EmailLabel}</div>
                     {
                       (this.state.mail) ?
                       <div>{this.state.mail}</div> :
-                      <div>Mail PH</div>
+                      <div>N/A</div>
                     }
                   </div>
                 </div>
                 <Stack horizontal>
                   <div className={ styles.dataContainer }>
-                    <div className={ styles.dataLabel }>Mobile Phone</div>
+                    <div className={ styles.dataLabel }>{strings.MobilePhoneLabel}</div>
                     {
                       (this.state.mobilePhone) ?
                       <div>{this.state.mobilePhone}</div> :
-                      <div>Phone N/A</div>
+                      <div>N/A</div>
                     }
                   </div>
                   <div className={ styles.dataContainer }>
-                    <div className={ styles.dataLabel }>Office Phone</div>
+                    <div className={ styles.dataLabel }>{strings.OfficePhoneLabel}</div>
                     {
                       (this.state.businessPhone) ?
                       <div>{this.state.businessPhone}</div> :
@@ -460,7 +462,7 @@ componentDidMount() {
                     }
                   </div>
                   <div className={ styles.dataContainer }>
-                    <div className={ styles.dataLabel }>Office Location</div>
+                    <div className={ styles.dataLabel }>{strings.OfficeLocationLabel}</div>
                     {
                       (this.state.officeLocation) &&
                       <div>{this.state.officeLocation}</div>
@@ -488,11 +490,11 @@ componentDidMount() {
                   </div>
                 </Stack>
                 <div className={ styles.dataContainer }>
-                  <div className={ styles.dataLabel }>Manager</div>  
+                  <div className={ styles.dataLabel }>{strings.MangerLabel}</div>  
                   {
                     (this.state.managerDisplayName) ?
                     <div>{this.state.managerDisplayName}</div> :
-                    <div>Manager N/A</div>
+                    <div>N/A</div>
                   }
                 </div>
                 <div>
